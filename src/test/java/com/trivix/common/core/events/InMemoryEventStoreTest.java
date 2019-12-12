@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Test;
 import testutils.Tuple;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -118,7 +115,7 @@ public class InMemoryEventStoreTest {
         IEvent event1 = Event.create("testData", aggregateId, UUID.randomUUID(), 0);
         IEvent event2 = Event.create("testData", aggregateId, UUID.randomUUID(), 0);
 
-        Tuple<AddEventStatus, AddEventStatus> results = submitTwoEventConcurrently(eventStore, event1, event2);
+        Tuple<AddEventStatus, AddEventStatus> results = submitTwoEventConcurrently(eventStore, event1, event2, false);
         AddEventStatus status1 = results.first;
         AddEventStatus status2 = results.second;
 
@@ -131,13 +128,78 @@ public class InMemoryEventStoreTest {
         assertTrue(events.get(0).equals(event1) || events.get(0).equals(event1));
     }
     
-    private Tuple<AddEventStatus, AddEventStatus> submitTwoEventConcurrently(IEventStore eventStore, IEvent event1, IEvent event2) throws ExecutionException, InterruptedException {
+    @Test
+    public void subscribeToEventsWithAggregateIdTest() throws ExecutionException, InterruptedException {
+        IEventStore eventStore = new InMemoryEventStore();
+        UUID aggregateId = UUID.randomUUID();
+
+        ConcurrentHashMap<UUID, IEvent> receivedEvents = new ConcurrentHashMap<>();
+        
+        eventStore.registerEventHandler(aggregateId, event -> {
+            if (receivedEvents.containsKey(event.getEventUniqueId())) 
+                fail("Duplicate message received");
+            
+            receivedEvents.put(event.getEventUniqueId(), event);
+        });
+
+        IEvent event1 = Event.create("testData", aggregateId, UUID.randomUUID(), 0);
+        IEvent event2 = Event.create("testData", aggregateId, UUID.randomUUID(), 1);
+
+        Tuple<AddEventStatus, AddEventStatus> results = submitTwoEventConcurrently(eventStore, event1, event2);
+
+        Thread.sleep(10);
+        
+        assertEquals(AddEventStatus.SUCCESS, results.first);
+        assertEquals(AddEventStatus.SUCCESS, results.second);
+        assertEquals(2, receivedEvents.size());
+        assertTrue(receivedEvents.containsKey(event1.getEventUniqueId()));
+        assertTrue(receivedEvents.containsKey(event2.getEventUniqueId()));
+    }
+
+    @Test
+    public void subscribeToEventsWithTypeTest() throws ExecutionException, InterruptedException {
+        IEventStore eventStore = new InMemoryEventStore();
+        UUID aggregateId = UUID.randomUUID();
+
+        ConcurrentHashMap<UUID, IEvent> receivedEvents = new ConcurrentHashMap<>();
+
+        eventStore.registerEventHandler(String.class, event -> {
+            if (receivedEvents.containsKey(event.getEventUniqueId()))
+                fail("Duplicate message received");
+
+            receivedEvents.put(event.getEventUniqueId(), event);
+        });
+
+        IEvent event1 = Event.create("testData", aggregateId, UUID.randomUUID(), 0);
+        IEvent event2 = Event.create("testData", aggregateId, UUID.randomUUID(), 1);
+        IEvent event3 = Event.create(1, aggregateId, UUID.randomUUID(), 2);
+
+        submitTwoEventConcurrently(eventStore, event1, event2);
+        eventStore.addEvent(event3);
+
+        Thread.sleep(10);
+
+        assertEquals(2, receivedEvents.size());
+        assertTrue(receivedEvents.containsKey(event1.getEventUniqueId()));
+        assertTrue(receivedEvents.containsKey(event2.getEventUniqueId()));
+    }
+    
+    private Tuple<AddEventStatus, AddEventStatus> submitTwoEventConcurrently(IEventStore eventStore, IEvent event1, IEvent event2, boolean retryOnVersionNumberError) throws ExecutionException, InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         
         Future<AddEventStatus> f1 = executor.submit(() -> eventStore.addEvent(event1));
         Future<AddEventStatus> f2 = executor.submit(() -> eventStore.addEvent(event2));
         
+        while (retryOnVersionNumberError && f2.get() == AddEventStatus.INVALID_VERSION_NUMBER) {
+            Thread.sleep(1);
+            f2 = executor.submit(() -> eventStore.addEvent(event2));
+        }
+        
         return new Tuple<>(f1.get(), f2.get());
+    }
+
+    private Tuple<AddEventStatus, AddEventStatus> submitTwoEventConcurrently(IEventStore eventStore, IEvent event1, IEvent event2) throws ExecutionException, InterruptedException {
+        return submitTwoEventConcurrently(eventStore, event1, event2, true);
     }
 
     
