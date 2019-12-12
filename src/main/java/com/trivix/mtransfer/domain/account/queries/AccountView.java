@@ -12,6 +12,9 @@ public class AccountView {
     private IAccountIdentifier accountIdentifier;
     private HashMap<Currency, BigDecimal> moneyAmounts;
 
+    public AccountView() {
+    }
+
     public AccountView(IAccount account) {
         accountIdentifier = account.getAccountId();
         moneyAmounts = new HashMap<>();

@@ -56,11 +56,9 @@ public class AccountController {
                     new MoneyAmount(Currency.getInstance(currency), new BigDecimal(amount)),
                     accountTransactionType
             ));
-            if (result.isSuccessful())
-                return result;
-
-            response.status(400);
-            return result.getError();
+            if (!result.isSuccessful())
+                response.status(400);
+            return result;
         } catch (NumberFormatException e) {
             response.status(400);
             return "Invalid number format";

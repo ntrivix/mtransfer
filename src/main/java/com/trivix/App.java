@@ -1,6 +1,5 @@
 package com.trivix;
 
-import com.google.gson.Gson;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.trivix.mtransfer.domain.account.commands.changeBalance.ChangeAccountBalanceCommandHandler;
@@ -8,22 +7,24 @@ import com.trivix.mtransfer.domain.account.exceptions.DuplicateAccountIdExceptio
 import com.trivix.mtransfer.domain.transactions.TransactionsProcessorSaga;
 import com.trivix.rest.AccountController;
 import com.trivix.rest.TransactionController;
-
-import java.math.BigDecimal;
+import spark.Spark;
 
 import static spark.Spark.*;
 
 
-public class App {
-    
+public class App implements Runnable {
+
+    private Injector injector;
+
     public static void main(String[] args) throws DuplicateAccountIdException {
         new App();
     }
 
-    public App() {
-        
-        Injector injector = Guice.createInjector(new MoneyTransferModule());
+    public App() {injector = Guice.createInjector(new MoneyTransferModule());
+    }
 
+    @Override
+    public void run() {
         injector.getProvider(ChangeAccountBalanceCommandHandler.class).get();
         injector.getProvider(TransactionsProcessorSaga.class).get();
 
@@ -40,7 +41,14 @@ public class App {
 
             transactionController.setPaths();
             accountController.setPaths();
-            
         });
+    }
+    
+    public void stopServer() {
+        stop();
+    }
+
+    public int getPort() {
+        return Spark.port();
     }
 }
