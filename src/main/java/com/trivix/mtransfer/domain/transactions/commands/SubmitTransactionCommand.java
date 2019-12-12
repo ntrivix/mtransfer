@@ -1,7 +1,7 @@
 package com.trivix.mtransfer.domain.transactions.commands;
 
 import com.trivix.common.core.command.ICommand;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.valueobjects.IAccountIdentifier;
 import com.trivix.mtransfer.domain.transactions.transaction.TransactionInfo;
 import com.trivix.mtransfer.domain.transactions.transaction.TransactionStatus;

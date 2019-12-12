@@ -1,5 +1,5 @@
 package com.trivix.mtransfer.domain.account;
 
-public enum BalanceChangeType {
+public enum AccountTransactionType {
     DEPOSIT, WITHDRAW
 }

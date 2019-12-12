@@ -1,7 +1,6 @@
 package com.trivix.mtransfer.common.valueobjects;
 
 import com.sun.istack.internal.NotNull;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;

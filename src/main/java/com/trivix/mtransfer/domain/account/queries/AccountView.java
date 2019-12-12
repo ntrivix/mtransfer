@@ -1,6 +1,6 @@
 package com.trivix.mtransfer.domain.account.queries;
 
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.IAccount;
 import com.trivix.mtransfer.domain.account.valueobjects.IAccountIdentifier;
 

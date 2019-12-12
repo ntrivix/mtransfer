@@ -1,4 +1,4 @@
-package com.trivix.mtransfer.common.valueobjects.contracts;
+package com.trivix.mtransfer.common.valueobjects;
 
 import com.sun.istack.internal.NotNull;
 

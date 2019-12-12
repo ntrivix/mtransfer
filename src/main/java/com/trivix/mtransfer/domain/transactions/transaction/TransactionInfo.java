@@ -1,6 +1,6 @@
 package com.trivix.mtransfer.domain.transactions.transaction;
 
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.valueobjects.IAccountIdentifier;
 
 import java.math.BigDecimal;

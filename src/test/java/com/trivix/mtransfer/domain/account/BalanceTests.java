@@ -1,10 +1,10 @@
-package com.trivix.mtransfer.common.valueobjects;
+package com.trivix.mtransfer.domain.account;
 
-import com.trivix.mtransfer.domain.account.BalanceChangeType;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.MoneyAmount;
+import com.trivix.mtransfer.domain.account.AccountTransactionType;
 import com.trivix.mtransfer.common.exceptions.ConcurrentBalanceChangeAttemptsException;
-import com.trivix.mtransfer.common.exceptions.InsufficientFundsException;
 import com.trivix.mtransfer.domain.account.valueobjects.IBalance;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.valueobjects.Balance;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
@@ -37,18 +37,18 @@ public class BalanceTests {
         IMoneyAmount addAmount = new MoneyAmount(currency, new BigDecimal(-100));
 
         // Act & Assert.
-        assertThrows(IllegalArgumentException.class, () -> balance.changeBalance(addAmount, BalanceChangeType.DEPOSIT));
+        assertThrows(IllegalArgumentException.class, () -> balance.changeBalance(addAmount, AccountTransactionType.DEPOSIT));
     }
     
     @Test
-    void creditBalanceTest() throws InsufficientFundsException, ConcurrentBalanceChangeAttemptsException {
+    void creditBalanceTest() throws ConcurrentBalanceChangeAttemptsException {
         // Arrange.
         IBalance balance = new Balance();
         Currency currency = Currency.getInstance("EUR");
         IMoneyAmount addAmount = new MoneyAmount(currency, new BigDecimal(100));
         
         // Act.
-        IMoneyAmount newAmount = balance.changeBalance(addAmount, BalanceChangeType.DEPOSIT);
+        IMoneyAmount newAmount = balance.changeBalance(addAmount, AccountTransactionType.DEPOSIT);
         
         // Assert.
         assertEquals(balance.getMoneyValue(currency), newAmount);
@@ -56,16 +56,16 @@ public class BalanceTests {
     }
 
     @Test
-    void debitBalanceTest() throws ConcurrentBalanceChangeAttemptsException, InsufficientFundsException {
+    void debitBalanceTest() throws ConcurrentBalanceChangeAttemptsException {
         // Arrange.
         IBalance balance = new Balance();
         Currency currency = Currency.getInstance("EUR");
         IMoneyAmount addAmount = new MoneyAmount(currency, new BigDecimal(100));
         
-        balance.changeBalance(addAmount, BalanceChangeType.DEPOSIT);
+        balance.changeBalance(addAmount, AccountTransactionType.DEPOSIT);
         
         // Act.
-        IMoneyAmount newAmount = balance.changeBalance(addAmount, BalanceChangeType.WITHDRAW);
+        IMoneyAmount newAmount = balance.changeBalance(addAmount, AccountTransactionType.WITHDRAW);
 
         // Assert.
         assertEquals(0, balance.getMoneyValue(currency).compareTo(BigDecimal.ZERO));
@@ -80,24 +80,27 @@ public class BalanceTests {
         MoneyAmount initialAmount = new MoneyAmount(currency, new BigDecimal(100));
         
         try {
-            balance.changeBalance(initialAmount, BalanceChangeType.DEPOSIT);
+            balance.changeBalance(initialAmount, AccountTransactionType.DEPOSIT);
         } catch (Exception e) {
             fail();
         }
 
-        assertThrows(InsufficientFundsException.class, () -> balance.changeBalance(
-                new MoneyAmount(currency, new BigDecimal(100.001f)), 
-                BalanceChangeType.WITHDRAW));
+        IMoneyAmount withdrawAmount = new MoneyAmount(currency, new BigDecimal(100.001f));
+        IMoneyAmount moneyAmount = balance.changeBalance(
+                withdrawAmount, 
+                AccountTransactionType.WITHDRAW);
 
         // Assert.
-        assertEquals(0, balance.getMoneyValue(currency).compareTo(initialAmount));
+        IMoneyAmount expectedAmount = initialAmount.subtract(withdrawAmount.getValue());
+        assertEquals(0, moneyAmount.compareTo(expectedAmount));
+        assertEquals(0, balance.getMoneyValue(currency).compareTo(expectedAmount));
     }
     
     @Test
-    void toStringTest() throws InsufficientFundsException, ConcurrentBalanceChangeAttemptsException {
+    void toStringTest() throws ConcurrentBalanceChangeAttemptsException {
         IBalance balance = new Balance();
-        balance.changeBalance(new MoneyAmount(Currency.getInstance("EUR"), 120), BalanceChangeType.DEPOSIT);
-        balance.changeBalance(new MoneyAmount(Currency.getInstance("RSD"), 120), BalanceChangeType.DEPOSIT);
+        balance.changeBalance(new MoneyAmount(Currency.getInstance("EUR"), 120), AccountTransactionType.DEPOSIT);
+        balance.changeBalance(new MoneyAmount(Currency.getInstance("RSD"), 120), AccountTransactionType.DEPOSIT);
         
         String balanceString = balance.toString();
         

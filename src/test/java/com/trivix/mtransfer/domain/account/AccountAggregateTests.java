@@ -1,6 +1,6 @@
-package com.trivix.mtransfer.common;
+package com.trivix.mtransfer.domain.account;
 
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.AccountAggregate;
 import com.trivix.mtransfer.domain.account.IAccount;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AccountTests {
+public class AccountAggregateTests {
     
     @Test
     void TwoAccountEqualityTest() {

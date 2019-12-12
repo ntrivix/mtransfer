@@ -7,7 +7,7 @@ import com.trivix.common.core.events.Event;
 import com.trivix.common.core.events.IEvent;
 import com.trivix.common.core.events.IEventStore;
 import com.trivix.common.utils.collections.readonly.IReadOnlyCollection;
-import com.trivix.mtransfer.domain.account.BalanceChangeType;
+import com.trivix.mtransfer.domain.account.AccountTransactionType;
 import com.trivix.mtransfer.domain.account.commands.changeBalance.ChangeAccountBalanceCommand;
 import com.trivix.mtransfer.domain.account.commands.changeBalance.ChangeAccountBalanceCommandHandler;
 import com.trivix.mtransfer.domain.account.commands.changeBalance.ChangeAccountBalanceCommandResult;
@@ -53,7 +53,7 @@ public class TransactionsProcessorSaga {
         ITransactionInfo transactionInfo = event.getData().getTransactionInfo();
         IAccountIdentifier sourceAccountId = transactionInfo.getSourceAccountId();
         ChangeAccountBalanceCommandResult result = changeAccountBalanceCommandHandler.executeCommand(new ChangeAccountBalanceCommand(
-                sourceAccountId, transactionInfo.getTransactionAmount(), BalanceChangeType.WITHDRAW, transactionInfo.getTransactionId()
+                sourceAccountId, transactionInfo.getTransactionAmount(), AccountTransactionType.WITHDRAW, transactionInfo.getTransactionId()
         )); 
         
         if (result.isSuccessful())
@@ -68,7 +68,7 @@ public class TransactionsProcessorSaga {
         ITransactionInfo transactionInfo = event.getData().getTransactionInfo();
         IAccountIdentifier sourceAccountId = transactionInfo.getTargetAccountId();
         ChangeAccountBalanceCommandResult result = changeAccountBalanceCommandHandler.executeCommand(new ChangeAccountBalanceCommand(
-                sourceAccountId, transactionInfo.getTransactionAmount(), BalanceChangeType.DEPOSIT, transactionInfo.getTransactionId()
+                sourceAccountId, transactionInfo.getTransactionAmount(), AccountTransactionType.DEPOSIT, transactionInfo.getTransactionId()
         ));
 
         if (result.isSuccessful())
@@ -107,7 +107,7 @@ public class TransactionsProcessorSaga {
             changeAccountBalanceCommandHandler.executeCommand(new ChangeAccountBalanceCommand(
                     transactionInfo.getSourceAccountId(),
                     transactionInfo.getTransactionAmount(),
-                    BalanceChangeType.DEPOSIT,
+                    AccountTransactionType.DEPOSIT,
                     rollbackTransactionId
             ));
             

@@ -8,7 +8,7 @@ import com.trivix.common.core.events.Event;
 import com.trivix.common.core.events.EventSubmissionException;
 import com.trivix.common.core.events.IEventStore;
 import com.trivix.common.utils.retry.Retry;
-import com.trivix.mtransfer.domain.account.BalanceChangeType;
+import com.trivix.mtransfer.domain.account.AccountTransactionType;
 import com.trivix.mtransfer.domain.account.IAccount;
 import com.trivix.mtransfer.domain.account.events.BalanceChangedEventData;
 import com.trivix.mtransfer.domain.account.valueobjects.IBalance;
@@ -40,7 +40,11 @@ public class ChangeAccountBalanceCommandHandler implements ICommandHandler<Chang
     @Override
     public ChangeAccountBalanceCommandResult executeCommand(ChangeAccountBalanceCommand command) {
         try {
-            return Retry.execute(() -> changeBalance(command), MAX_RETRIES, RETRY_SLEEP_MS, EventSubmissionException.class);
+            return Retry.execute(() -> 
+                    changeBalance(command), 
+                    MAX_RETRIES, 
+                    RETRY_SLEEP_MS, 
+                    EventSubmissionException.class);
         } catch (EventSubmissionException e) {
             ChangeAccountBalanceStatus status = ChangeAccountBalanceStatus.INCONSISTENT_STATE;
             if (e.getStatus() == DUPLICATE_MESSAGE)
@@ -72,7 +76,7 @@ public class ChangeAccountBalanceCommandHandler implements ICommandHandler<Chang
                 new BalanceChangedEventData(
                         account,
                         command.getMoneyAmount(),
-                        command.getChangeType(),
+                        command.getTransactionType(),
                         command.getDescription()
                 ),
                 account.getAccountId().getUUID(),
@@ -82,7 +86,7 @@ public class ChangeAccountBalanceCommandHandler implements ICommandHandler<Chang
     }
     
     private boolean isEnoughFundsOnAccount(IBalance balance, ChangeAccountBalanceCommand command) {
-        if (command.getChangeType() == BalanceChangeType.DEPOSIT)
+        if (command.getTransactionType() == AccountTransactionType.DEPOSIT)
             return true;
         
         Currency currency = command.getMoneyAmount().getCurrency();

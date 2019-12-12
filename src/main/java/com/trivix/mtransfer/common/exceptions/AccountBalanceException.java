@@ -10,11 +10,6 @@ public class AccountBalanceException extends RuntimeException {
         this.balance = balance;
     }
 
-    public AccountBalanceException(String message, IBalance balance, Throwable cause) {
-        super(message, cause);
-        this.balance = balance;
-    }
-
     public IBalance getBalance() {
         return balance;
     }

@@ -2,15 +2,13 @@ package com.trivix.mtransfer.domain.account.valueobjects;
 
 import com.sun.istack.internal.NotNull;
 import com.trivix.mtransfer.common.valueobjects.MoneyAmount;
-import com.trivix.mtransfer.domain.account.BalanceChangeType;
+import com.trivix.mtransfer.domain.account.AccountTransactionType;
 import com.trivix.mtransfer.common.exceptions.ConcurrentBalanceChangeAttemptsException;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Currency;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,7 +21,7 @@ public class Balance implements IBalance {
     }
     
     @Override
-    public IMoneyAmount changeBalance(@NotNull IMoneyAmount deltaAmount, BalanceChangeType balanceChangeType) throws ConcurrentBalanceChangeAttemptsException {
+    public IMoneyAmount changeBalance(@NotNull IMoneyAmount deltaAmount, AccountTransactionType accountTransactionType) throws ConcurrentBalanceChangeAttemptsException {
         validateAmount(deltaAmount);
         balance.putIfAbsent(
                 deltaAmount.getCurrency(), 
@@ -31,7 +29,7 @@ public class Balance implements IBalance {
             
         for (int i = 0; i < MAX_RETRIES; i++) {
             IMoneyAmount oldAmount = getMoneyValue(deltaAmount.getCurrency());
-            IMoneyAmount newAmount = balanceChangeType == BalanceChangeType.DEPOSIT ? 
+            IMoneyAmount newAmount = accountTransactionType == AccountTransactionType.DEPOSIT ? 
                     oldAmount.add(deltaAmount.getValue()) : 
                     oldAmount.subtract(deltaAmount.getValue());
             if (compareAndSet(oldAmount, newAmount))

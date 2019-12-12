@@ -1,7 +1,7 @@
 package com.trivix.mtransfer.common.exceptions;
 
 import com.trivix.mtransfer.domain.account.valueobjects.IBalance;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
 
 public class ConcurrentBalanceChangeAttemptsException extends AccountBalanceException {
     private IMoneyAmount amount;

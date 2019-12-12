@@ -1,8 +1,9 @@
-package com.trivix.mtransfer.common.valueobjects;
+package com.trivix.mtransfer.domain.account;
 
-import com.trivix.mtransfer.domain.account.BalanceChangeType;
+import com.trivix.mtransfer.common.valueobjects.IMoneyAmount;
+import com.trivix.mtransfer.common.valueobjects.MoneyAmount;
+import com.trivix.mtransfer.domain.account.AccountTransactionType;
 import com.trivix.mtransfer.domain.account.valueobjects.IBalance;
-import com.trivix.mtransfer.common.valueobjects.contracts.IMoneyAmount;
 import com.trivix.mtransfer.domain.account.valueobjects.Balance;
 import javafx.util.Pair;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class ConcurrentBalanceChangeTest
 {
     private IBalance balance;
-    private ConcurrentLinkedQueue<Pair<IMoneyAmount, BalanceChangeType>> balanceChangeQueue = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Pair<IMoneyAmount, AccountTransactionType>> balanceChangeQueue = new ConcurrentLinkedQueue<>();
 
     private Currency eur = Currency.getInstance("EUR");
     private Currency gbp = Currency.getInstance("GBP");
@@ -34,28 +35,28 @@ public class ConcurrentBalanceChangeTest
         try {
             initialEur = balance.changeBalance(
                     new MoneyAmount(eur, new BigDecimal(100)),
-                    BalanceChangeType.DEPOSIT);
+                    AccountTransactionType.DEPOSIT);
             initialGbp = balance.changeBalance(
                     new MoneyAmount(gbp, new BigDecimal(200)),
-                    BalanceChangeType.DEPOSIT);
+                    AccountTransactionType.DEPOSIT);
         } catch (Exception ignored) {}
 
         balanceChangeQueue = new ConcurrentLinkedQueue<>();
 
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 30), BalanceChangeType.DEPOSIT));
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 10), BalanceChangeType.WITHDRAW));
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 20), BalanceChangeType.WITHDRAW));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 30), AccountTransactionType.DEPOSIT));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 10), AccountTransactionType.WITHDRAW));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(eur, 20), AccountTransactionType.WITHDRAW));
 
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 30), BalanceChangeType.DEPOSIT));
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 10), BalanceChangeType.WITHDRAW));
-        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 20), BalanceChangeType.WITHDRAW));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 30), AccountTransactionType.DEPOSIT));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 10), AccountTransactionType.WITHDRAW));
+        balanceChangeQueue.add(new Pair<>(new MoneyAmount(gbp, 20), AccountTransactionType.WITHDRAW));
     }
 
     @Test
     void balanceChange() throws InterruptedException {
         ArrayList<Runnable> runnable = new ArrayList<>();
         while (!balanceChangeQueue.isEmpty()) {
-            Pair<IMoneyAmount, BalanceChangeType> balanceChangeRequest = balanceChangeQueue.poll();
+            Pair<IMoneyAmount, AccountTransactionType> balanceChangeRequest = balanceChangeQueue.poll();
             runnable.add(() -> {
                 try {
                     balance.changeBalance(balanceChangeRequest.getKey(), balanceChangeRequest.getValue());
