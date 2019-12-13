@@ -56,26 +56,9 @@ public class TransactionController {
     }
 
     private Object submitTransaction(Request request, Response response) {
-        String from = request.queryParamOrDefault("from", null);
-        String to = request.queryParamOrDefault("to", null);
-        String amount = request.queryParamOrDefault("amount", null);
-        String currency = request.queryParamOrDefault("currency", null);
-        String note = request.queryParamOrDefault("note", "");
-        
-        if (from == null || to == null || amount == null || currency == null)
-        {
-            response.status(400);
-            return "All parameters must be provided [from, to, amount, currency]";
-        }
-        
         try {
-            return submitTransactionCommandHandler.executeCommand(new SubmitTransactionCommand(
-                    UUID.randomUUID(),
-                    new AccountIdentifier(from),
-                    new AccountIdentifier(to),
-                    new MoneyAmount(Currency.getInstance(currency), new BigDecimal(amount)),
-                    note
-            ));
+            SubmitTransactionCommand command = createTransactionCommand(request);
+            return submitTransactionCommandHandler.executeCommand(command);
         } catch (NumberFormatException e) {
             response.status(400);
             return "Amount format is invalid";
@@ -85,6 +68,25 @@ public class TransactionController {
                 return "One or more invalid parameters";
             return e.getMessage();
         }
+    }
+    
+    private SubmitTransactionCommand createTransactionCommand(Request request) {
+        String from = request.queryParamOrDefault("from", null);
+        String to = request.queryParamOrDefault("to", null);
+        String amount = request.queryParamOrDefault("amount", null);
+        String currency = request.queryParamOrDefault("currency", null);
+        String note = request.queryParamOrDefault("note", "");
+
+        if (from == null || to == null || amount == null || currency == null)
+            throw new IllegalArgumentException("All parameters must be provided [from, to, amount, currency]");
+
+        return new SubmitTransactionCommand(
+                UUID.randomUUID(),
+                new AccountIdentifier(from),
+                new AccountIdentifier(to),
+                new MoneyAmount(Currency.getInstance(currency), new BigDecimal(amount)),
+                note
+        );
     }
 
 

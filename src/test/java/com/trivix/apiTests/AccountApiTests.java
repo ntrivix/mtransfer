@@ -16,7 +16,7 @@ import static io.restassured.path.json.config.JsonPathConfig.NumberReturnType.BI
 import static org.hamcrest.Matchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class CreateAccountRestTests {
+public class AccountApiTests {
     
     private App app;
 
