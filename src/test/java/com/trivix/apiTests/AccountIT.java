@@ -5,7 +5,6 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -15,23 +14,14 @@ import static io.restassured.config.JsonConfig.jsonConfig;
 import static io.restassured.path.json.config.JsonPathConfig.NumberReturnType.BIG_DECIMAL;
 import static org.hamcrest.Matchers.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AccountApiTests {
+public class AccountIT {
     
-    private App app;
-
     @BeforeAll
-    public void prepareServer() {
-        app = new App();
-        app.run();
+    public static void prepareServer() {
+        App app = AppSingleton.getApp();
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = app.getPort();
         RestAssured.basePath = "/api";
-    }
-    
-    @AfterAll
-    public void stopServer() {
-        app.stopServer();
     }
     
     @Test

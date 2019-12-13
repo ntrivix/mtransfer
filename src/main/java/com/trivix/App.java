@@ -2,6 +2,7 @@ package com.trivix;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.trivix.common.utils.Utils;
 import com.trivix.mtransfer.domain.account.commands.changeBalance.ChangeAccountBalanceCommandHandler;
 import com.trivix.mtransfer.domain.account.exceptions.DuplicateAccountIdException;
 import com.trivix.mtransfer.domain.transactions.TransactionsProcessorSaga;
@@ -25,6 +26,8 @@ public class App implements Runnable {
 
     @Override
     public void run() {
+        initExceptionHandler((e) -> System.out.println("Can't init server"));
+        
         injector.getProvider(ChangeAccountBalanceCommandHandler.class).get();
         injector.getProvider(TransactionsProcessorSaga.class).get();
 
@@ -42,10 +45,13 @@ public class App implements Runnable {
             transactionController.setPaths();
             accountController.setPaths();
         });
+
+        init();
     }
     
     public void stopServer() {
         stop();
+        Utils.sleep(4000);
     }
 
     public int getPort() {

@@ -20,23 +20,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TransactionApiTests {
 
-    private App app;
+public class TransactionIT {
 
     @BeforeAll
-    public void prepareServer() {
-        app = new App();
-        app.run();
+    public static void prepareServer() {
+        App app = AppSingleton.getApp();
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = app.getPort();
         RestAssured.basePath = "/api";
-    }
-
-    @AfterAll
-    public void stopServer() {
-        app.stopServer();
     }
 
     @Test
